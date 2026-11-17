@@ -1,0 +1,10 @@
+{
+  "name": "Den Haag-Loosduinen",
+  "short": "Loosduinen",
+  "region": "Den Haag en omgeving",
+  "center": [4.2375, 52.0565],
+  "zoom": 13,
+  "bbox": [4.02, 51.92, 4.46, 52.19],
+  "maxzoom": 15,
+  "maxMapMB": 95
+}

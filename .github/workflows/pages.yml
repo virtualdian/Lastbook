@@ -1,0 +1,110 @@
+name: Bouw en publiceer Lastbook
+
+on:
+  push:
+    branches: [main, claude/clever-brahmagupta-7nd0rh]
+  workflow_dispatch:
+  schedule:
+    # Elke maand de kaart en hulppunten verversen (1e van de maand, 03:17 UTC)
+    - cron: "17 3 1 * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "1.25"
+          cache: false
+
+      - name: Installeer pmtiles CLI
+        run: go install github.com/protomaps/go-pmtiles@v1.31.2
+
+      - name: Hulppunten en straten ophalen (OpenStreetMap / Overpass)
+        run: node tools/build-data.mjs
+
+      - name: Offline kaart uitsnijden (Protomaps)
+        run: |
+          set -euo pipefail
+          BBOX=$(jq -r '.bbox | join(",")' area.json)
+          MAXZ=$(jq -r '.maxzoom' area.json)
+          LIMIT=$(( $(jq -r '.maxMapMB' area.json) * 1024 * 1024 ))
+          SRC=""
+          for i in $(seq 1 14); do
+            D=$(date -u -d "-$i day" +%Y%m%d)
+            if curl -sfI "https://build.protomaps.com/$D.pmtiles" > /dev/null; then SRC=$D; break; fi
+          done
+          if [ -z "$SRC" ]; then echo "Geen recente Protomaps-build gevonden"; exit 1; fi
+          echo "Bron: build.protomaps.com/$SRC.pmtiles"
+          while :; do
+            rm -f data/map.pmtiles
+            "$(go env GOPATH)/bin/go-pmtiles" extract "https://build.protomaps.com/$SRC.pmtiles" data/map.pmtiles \
+              --bbox="$BBOX" --maxzoom="$MAXZ" --download-threads=8
+            SIZE=$(stat -c %s data/map.pmtiles)
+            echo "Kaart z$MAXZ: $((SIZE / 1024 / 1024)) MB"
+            if [ "$SIZE" -le "$LIMIT" ] || [ "$MAXZ" -le 13 ]; then break; fi
+            MAXZ=$((MAXZ - 1))
+            echo "Te groot, opnieuw met maxzoom $MAXZ"
+          done
+          echo "MAP_SRC=$SRC" >> "$GITHUB_ENV"
+          echo "MAP_MAXZ=$MAXZ" >> "$GITHUB_ENV"
+
+      - name: Lettertypen en iconen voor de kaart
+        run: |
+          set -euo pipefail
+          A=https://protomaps.github.io/basemaps-assets
+          for font in "Noto Sans Regular" "Noto Sans Medium" "Noto Sans Italic"; do
+            mkdir -p "data/fonts/$font"
+            for range in 0-255 256-511 8192-8447; do
+              curl -sfL "$A/fonts/${font// /%20}/$range.pbf" -o "data/fonts/$font/$range.pbf"
+            done
+          done
+          mkdir -p data/sprites
+          for f in light.json light.png light@2x.json light@2x.png dark.json dark.png dark@2x.json dark@2x.png; do
+            curl -sfL "$A/sprites/v4/$f" -o "data/sprites/$f"
+          done
+
+      - name: meta.json schrijven
+        run: node tools/write-meta.mjs "$MAP_SRC" "$MAP_MAXZ"
+
+      - name: Site samenstellen
+        run: |
+          set -euo pipefail
+          mkdir _site
+          cp -r index.html manifest.webmanifest sw.js area.json css js vendor icons data _site/
+          cp LICENSE NOTICE.md _site/ 2>/dev/null || true
+          touch _site/.nojekyll
+          sed -i "s/__BUILD__/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/" _site/sw.js _site/js/app.js
+          du -sh _site _site/data/*
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

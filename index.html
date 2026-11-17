@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lastbook Loosduinen</title>
+<meta name="description" content="Offline noodgids voor Den Haag-Loosduinen en omgeving: EHBO, water, stroom, overstroming, storm, noodplan en een offline kaart met hulppunten.">
+<meta name="theme-color" content="#f7f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14171c" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lastbook">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#/" aria-label="Lastbook, naar start">
+    <img src="icons/icon-192.png" alt="" width="28" height="28">
+    <span><b>Lastbook</b> <small id="area-name">Loosduinen</small></span>
+  </a>
+  <span id="net" class="net" role="status" aria-live="polite"></span>
+</header>
+
+<main id="main">
+  <div id="view" tabindex="-1"></div>
+  <section id="mapview" hidden aria-label="Kaart">
+    <div class="map-tools">
+      <div class="searchbox">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="map-q" type="search" placeholder="Zoek straat, wijk of plek" autocomplete="off" enterkeyhint="search" aria-label="Zoek op de kaart">
+      </div>
+      <div id="map-results" class="map-results" hidden></div>
+      <div id="chips" class="chips" role="group" aria-label="Filter hulppunten"></div>
+    </div>
+    <div id="map" class="map"></div>
+    <div id="map-msg" class="map-msg" hidden></div>
+    <div id="sheet" class="sheet">
+      <button id="sheet-toggle" class="sheet-handle" aria-expanded="false">
+        <span class="grip" aria-hidden="true"></span>
+        <span id="sheet-title">Dichtbij</span>
+      </button>
+      <div id="sheet-body" class="sheet-body"></div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Hoofdmenu">
+  <a href="#/" data-tab="home">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 3 8v13h6v-6h6v6h6V8z"/></svg><span>Nu</span>
+  </a>
+  <a href="#/gidsen" data-tab="gidsen">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></svg><span>Gidsen</span>
+  </a>
+  <a href="#/kaart" data-tab="kaart">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></svg><span>Kaart</span>
+  </a>
+  <a href="#/plan" data-tab="plan">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 3h6v3H9zM7 5H5v16h14V5h-2M8 11h8M8 15h8M8 19h5"/></svg><span>Mijn plan</span>
+  </a>
+</nav>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="js/guides.js"></script>
+<script src="js/app.js"></script>
+<script src="js/map.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "Lastbook Den Haag-Loosduinen",
+  "short_name": "Lastbook",
+  "description": "Offline noodgids en kaart voor Den Haag-Loosduinen en omgeving.",
+  "lang": "nl",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f4ef",
+  "theme_color": "#f7f4ef",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

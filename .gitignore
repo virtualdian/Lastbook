@@ -1,0 +1,5 @@
+# Wordt door de GitHub Actions-workflow gebouwd
+data/*
+!data/.gitkeep
+_site/
+node_modules/
